@@ -1,0 +1,189 @@
+version: "3.9"
+
+services:
+  locust-sync:
+    image: perfomace-locust
+    build:
+      context: .
+      dockerfile: ./Locust.dockerfile
+    ports:
+      - "8089:8089"
+    command: -f ./locustfile.py Sync
+    deploy:
+      resources:
+        limits:
+          cpus: '3.0'
+
+  locust-async:
+    image: perfomace-locust
+    build:
+      context: .
+      dockerfile: ./Locust.dockerfile
+    ports:
+      - "8088:8089"
+    command: -f ./locustfile.py Async
+    deploy:
+      resources:
+        limits:
+          cpus: '3.0'
+
+  fastapi-uvicorn:
+    image: test-app
+    build:
+      context: .
+    command: uvicorn --host 0.0.0.0 --port 8000 --workers 5  app:fastapi_app
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+        reservations:
+          cpus: '2.0'
+
+  fastapi-hypercorn:
+    image: test-app
+    command: hypercorn -w 5 -b 0.0.0.0:8000 --access-logfile - app:fastapi_app
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+        reservations:
+          cpus: '2.0'
+
+  fastapi-gunicorn-h11:
+    image: test-app
+    command: gunicorn -c gunicorn_config.py  -k uvicorn.workers.UvicornH11Worker -b 0.0.0.0:8000 --access-logfile - --error-logfile -  app:fastapi_app
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+        reservations:
+          cpus: '2.0'
+
+  fastapi-gunicorn:
+    image: test-app
+    command: gunicorn -c gunicorn_config.py  -k uvicorn.workers.UvicornWorker -b 0.0.0.0:8000 --access-logfile - --error-logfile -  app:fastapi_app
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+        reservations:
+          cpus: '2.0'
+
+  falcon-asgi-uvicorn:
+    image: test-app
+    command: uvicorn --host 0.0.0.0 --port 8000 --workers 5  app:falcon_asgi_app
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+        reservations:
+          cpus: '2.0'
+
+  falcon-asgi-hypercorn:
+    image: test-app
+    command: hypercorn -w 5 -b 0.0.0.0:8000 --access-logfile - app:falcon_asgi_app
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+        reservations:
+          cpus: '2.0'
+
+  falcon-asgi-gunicorn-uvicorn-h11:
+    image: test-app
+    command: gunicorn -c gunicorn_config.py   -k uvicorn.workers.UvicornH11Worker -b 0.0.0.0:8000 --access-logfile - --error-logfile -  app:falcon_asgi_app
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+        reservations:
+          cpus: '2.0'
+
+  falcon-asgi-gunicorn-uvicorn:
+    image: test-app
+    command: gunicorn -c gunicorn_config.py  -k uvicorn.workers.UvicornWorker -b 0.0.0.0:8000 --access-logfile - --error-logfile -  app:falcon_asgi_app
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+        reservations:
+          cpus: '2.0'
+
+  falcon-wsgi-gunicorn-sync:
+    image: test-app
+    command: gunicorn -c gunicorn_config.py -b 0.0.0.0:8000 --access-logfile - --error-logfile -  app:falcon_wsgi_app
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+        reservations:
+          cpus: '2.0'
+
+  falcon-wsgi-gunicorn-eventlet:
+    image: test-app
+    command: gunicorn -c gunicorn_config.py  -k eventlet -b 0.0.0.0:8000 --access-logfile - --error-logfile -  app:falcon_wsgi_app
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+        reservations:
+          cpus: '2.0'
+
+  falcon-wsgi-gunicorn-gevent:
+    image: test-app
+    command: gunicorn -c gunicorn_config.py  -k gevent -b 0.0.0.0:8000 --access-logfile - --error-logfile -  app:falcon_wsgi_app
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+        reservations:
+          cpus: '2.0'
+
+  falcon-wsgi-gunicorn-tornado:
+    image: test-app
+    command: gunicorn -c gunicorn_config.py  -k tornado -b 0.0.0.0:8000 --access-logfile - --error-logfile -  app:falcon_wsgi_app
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+        reservations:
+          cpus: '2.0'
+
+  falcon-wsgi-gunicorn-gthread:
+    image: test-app
+    command: gunicorn -c gunicorn_config.py  -k gthread -b 0.0.0.0:8000 --access-logfile - --error-logfile -  app:falcon_wsgi_app
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+        reservations:
+          cpus: '2.0'
+
+  falcon-wsgi-bjoern:
+    image: test-app
+    command: python -m app falcon-wsgi-bjoern
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+        reservations:
+          cpus: '2.0'
+
+  falcon-wsgi-uwsgi:
+    image: test-app
+    command: uwsgi -p 5 --threads 8 --protocol=http -s 0.0.0.0:8000 --enable-threads --thunder-lock --vacuum --module app:falcon_wsgi_app
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+        reservations:
+          cpus: '2.0'
+  falcon-wsgi-uwsgi-gevent:
+    image: test-app
+    command: uwsgi -p 5 --gevent 100 --protocol=http -s 0.0.0.0:8000 --enable-threads --thunder-lock --vacuum --module app:falcon_wsgi_app
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+        reservations:
+          cpus: '2.0'

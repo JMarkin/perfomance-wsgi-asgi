@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Test Report</title>
+    <style>
+        body {
+            background: #173529;
+        }
+
+        .container {
+            width: 1000px;
+            margin: 0 auto;
+            padding: 10px;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 14px;
+            color: #ecf3ee;
+        }
+
+        .info span {
+            color: #b3c3bc;
+        }
+
+        .charts-container .chart {
+            width: 100%;
+            height: 350px;
+            margin-bottom: 30px;
+        }
+
+        .download {
+            float: right;
+        }
+
+        .download a {
+            color: #00ca5a;
+        }
+
+        /* tables.css */
+        table.stats {
+            width: 100%;
+            border-radius: 3px;
+            border: 2px solid #11251c;
+            border-spacing: 0;
+            margin-bottom: 30px;
+        }
+
+        table.stats thead {
+            padding: 0;
+            margin: 0;
+            color: #a9c5ba;
+        }
+
+        table.stats thead tr {
+            background: #11251c;
+        }
+
+        table.stats thead tr:nth-child(even) {
+            background: #11251c;
+        }
+
+        table.stats thead tr:hover {
+            background: #11251c;
+        }
+
+        table.stats thead th {
+            font-weight: bold;
+            cursor: default;
+        }
+
+        table.stats thead th.nowrap {
+            white-space: nowrap;
+        }
+
+        table.stats thead th[data-sortkey] {
+            cursor: pointer;
+        }
+
+        table.stats tr:hover {
+            background: #1d4434;
+        }
+
+        table.stats tr td,
+        table.stats tr th {
+            padding: 10px;
+            margin: 0;
+            text-align: left;
+        }
+
+        table.stats tr td:first-child,
+        table.stats tr th:first-child {
+            padding-left: 16px;
+        }
+
+        table.stats tr td:last-child,
+        table.stats tr th:last-child {
+            padding-right: 16px;
+        }
+
+        table.stats tr td.numeric,
+        table.stats tr th.numeric {
+            text-align: right;
+        }
+
+        table.stats tr td {
+            max-width: 450px;
+            overflow: hidden;
+            word-wrap: break-word;
+            white-space: no-wrap;
+            text-overflow: ellipsis;
+        }
+
+        @media (max-width: 1100px) {
+            table.stats tr td {
+                max-width: 350px;
+            }
+        }
+
+        table.stats tr:nth-child(even) {
+            background: #153126;
+        }
+
+        table.stats tr:nth-child(even):hover {
+            background: #1d4434;
+        }
+
+        table.stats tr.total {
+            background: #11251c;
+        }
+
+        table.stats tr.total td {
+            font-weight: bold;
+        }
+
+        /*# sourceMappingURL=tables.css.map */
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Full Test Report</h1>
+
+        <div class="charts-container" style="margin-top: 100px">
+            <h2>Charts</h2>
+        </div>
+
+    </div>
+
+
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js"
+        integrity="sha512-ju6u+4bPX50JQmgU97YOGAXmRMrD9as4LE05PdC3qycsGQmjGlfm041azyB1VfCXpkpt1i9gqXCT6XuxhBJtKg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.0.0/echarts.common.min.js"
+        integrity="sha512-sgjf2XQikbNM6rYK8HIvY8GnOY0WrXUkluoh71qBzH2Cdm5qLJpFLwX9zCO5lkG11k8oh89yzQ8SOqLlQjIYHw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script>
+
+        (function (root, factory) {
+            if (typeof define === 'function' && define.amd) {
+                // AMD. Register as an anonymous module.
+                define(['exports', 'echarts'], factory);
+            } else if (typeof exports === 'object' && typeof exports.nodeName !== 'string') {
+                // CommonJS
+                factory(exports, require('echarts'));
+            } else {
+                // Browser globals
+                factory({}, root.echarts);
+            }
+        }(this, function (exports, echarts) {
+            var log = function (msg) {
+                if (typeof console !== 'undefined') {
+                    console && console.error && console.error(msg);
+                }
+            };
+            if (!echarts) {
+                log('ECharts is not Loaded');
+                return;
+            }
+            var colorPalette = ['#00ca5a', '#ffca5a', '#d7ab82', '#6e7074', '#61a0a8', '#efa18d', '#787464', '#cc7e63', '#724e58', '#4b565b'];
+            echarts.registerTheme('vintage', {
+                color: colorPalette,
+                backgroundColor: '#132b21',
+                xAxis: { lineColor: "#f00" },
+                graph: {
+                    color: colorPalette,
+                },
+                textStyle: { color: "#b3c3bc" },
+                title: {
+                    textStyle: { color: "#b3c3bc" }
+                },
+            });
+        }));
+    </script>
+    <script>
+
+        (function () {
+            class LocustLineChart {
+                /**
+                 * lines should be an array of line names
+                 */
+                constructor(container, title, lines, unit, colors) {
+                    this.container = $(container);
+                    this.title = title;
+                    this.lines = lines;
+
+                    this.element = $('<div class="chart"></div>').css("width", "100%").appendTo(container);
+                    this.data = [];
+                    this.dates = [];
+
+                    var seriesData = [];
+                    for (var i = 0; i < lines.length; i++) {
+                        seriesData.push({
+                            name: lines[i],
+                            type: 'line',
+                            showSymbol: true,
+                            hoverAnimation: false,
+                            data: [],
+                        });
+                        this.data.push([]);
+                    }
+
+                    this.chart = echarts.init(this.element[0], 'vintage');
+                    this.chart.setOption({
+                        legend: {
+                            icon: 'circle',
+                            inactiveColor: '#b3c3bc',
+                            textStyle: {
+                                color: '#b3c3bc',
+                            }
+                        },
+                        title: {
+                            text: this.title,
+                            x: 10,
+                            y: 10,
+                        },
+                        tooltip: {
+                            trigger: 'axis',
+                            formatter: function (params) {
+                                if (!!params && params.length > 0 && params.some(param => !!param.value)) {
+                                    var str = params[0].name;
+                                    params.sort((a, b) => (a.data.value > b.data.value) ? -1 : ((b.data.value > a.data.value) ? 1 : 0));
+                                    for (var i = 0; i < params.length; i++) {
+                                        var param = params[i];
+                                        str += '<br><span style="color:' + param.color + ';">' + param.seriesName + ': ' + param.data.value;
+                                        if (param.data.users != undefined) {
+                                            str += '  Users: ' + param.data.users;
+                                        }
+                                        str += '</span>';
+                                    }
+                                    return str;
+                                } else {
+                                    return "No data";
+                                }
+                            },
+                            axisPointer: {
+                                animation: true
+                            },
+                            textStyle: {
+                                color: '#b3c3bc',
+                                fontSize: 13,
+                            },
+                            backgroundColor: 'rgba(21,35,28, 0.93)',
+                            borderWidth: 0,
+                            extraCssText: "z-index:1;",
+                        },
+                        xAxis: {
+                            type: 'category',
+                            splitLine: {
+                                show: false
+                            },
+                            axisLine: {
+                                lineStyle: {
+                                    color: '#5b6f66',
+                                },
+                            },
+                            data: this.dates,
+                        },
+                        yAxis: {
+                            type: 'value',
+                            boundaryGap: [0, '5%'],
+                            splitLine: {
+                                show: false
+                            },
+                            axisLine: {
+                                lineStyle: {
+                                    color: '#5b6f66',
+                                },
+                            },
+                        },
+                        series: seriesData,
+                        grid: { x: 60, y: 70, x2: 40, y2: 40 },
+                        color: colors,
+                        toolbox: {
+                            feature: {
+                                saveAsImage: {
+                                    name: this.title.replace(/\s+/g, '_').toLowerCase() + '_' + Date.parse(new Date()) / 1000,
+                                    title: "Download as PNG"
+                                }
+                            }
+                        }
+                    })
+                }
+
+                addValue(values, user_count = 0) {
+                    this.dates.push(new Date().toLocaleTimeString());
+                    var seriesData = [];
+                    for (var i = 0; i < values.length; i++) {
+                        var value = Math.round(values[i] * 100) / 100;
+                        this.data[i].push({ "value": value, "users": user_count });
+                        seriesData.push({ data: this.data[i] });
+                    }
+                    this.chart.setOption({
+                        xAxis: {
+                            data: this.dates,
+                        },
+                        series: seriesData
+                    });
+                }
+
+                resize() {
+                    this.chart.resize();
+                }
+            }
+            window.LocustLineChart = LocustLineChart;
+        })();
+    </script>
+
+    <script>
+
+        var falcon_async_hypercorn = {
+            "time": ["19:21:57", "19:22:02", "19:22:07", "19:22:12", "19:22:17", "19:22:22", "19:22:27", "19:22:32", "19:22:37", "19:22:42", "19:22:47", "19:22:52", "19:22:57", "19:23:02", "19:23:07", "19:23:12", "19:23:17", "19:23:22", "19:23:27", "19:23:32", "19:23:37", "19:23:42", "19:23:47", "19:23:52", "19:23:57", "19:24:02", "19:24:08", "19:24:13", "19:24:18", "19:24:23", "19:24:28", "19:24:33"],
+            "user_count": [{ "value": 426 }, { "value": 882 }, { "value": 1304 }, { "value": 1657 }, { "value": 1945 }, { "value": 2177 }, { "value": 2395 }, { "value": 2593 }, { "value": 2789 }, { "value": 2981 }, { "value": 3170 }, { "value": 3362 }, { "value": 3545 }, { "value": 3738 }, { "value": 3925 }, { "value": 4109 }, { "value": 4288 }, { "value": 4470 }, { "value": 4640 }, { "value": 4821 }, { "value": 4996 }, { "value": 5000 }, { "value": 5000 }, { "value": 4998 }, { "value": 4995 }, { "value": 4992 }, { "value": 4988 }, { "value": 4985 }, { "value": 4982 }, { "value": 4979 }, { "value": 4975 }, { "value": 4972 }],
+            "current_rps": [{ "users": 426, "value": 37.0 }, { "users": 882, "value": 247.75 }, { "users": 1304, "value": 593.9 }, { "users": 1657, "value": 1033.3 }, { "users": 1945, "value": 1401.2 }, { "users": 2177, "value": 1634.1 }, { "users": 2395, "value": 1753.9 }, { "users": 2593, "value": 1793.0 }, { "users": 2789, "value": 1843.1 }, { "users": 2981, "value": 1883.9 }, { "users": 3170, "value": 1878.6 }, { "users": 3362, "value": 1841.4 }, { "users": 3545, "value": 1833.6 }, { "users": 3738, "value": 1875.4 }, { "users": 3925, "value": 1825.8 }, { "users": 4109, "value": 1685.4 }, { "users": 4288, "value": 1759.9 }, { "users": 4470, "value": 1883.9 }, { "users": 4640, "value": 1818.1 }, { "users": 4821, "value": 1754.6 }, { "users": 4996, "value": 1676.9 }, { "users": 5000, "value": 1673.2 }, { "users": 5000, "value": 1774.0 }, { "users": 4998, "value": 1832.3 }, { "users": 4995, "value": 1789.8 }, { "users": 4992, "value": 1820.4 }, { "users": 4988, "value": 1893.0 }, { "users": 4985, "value": 1804.4 }, { "users": 4982, "value": 1767.3 }, { "users": 4979, "value": 1808.7 }, { "users": 4975, "value": 1822.5 }, { "users": 4972, "value": 1812.7 }],
+            "current_fail_per_sec": [{ "users": 426, "value": 0 }, { "users": 882, "value": 0 }, { "users": 1304, "value": 0 }, { "users": 1657, "value": 0 }, { "users": 1945, "value": 0 }, { "users": 2177, "value": 0 }, { "users": 2395, "value": 0 }, { "users": 2593, "value": 0 }, { "users": 2789, "value": 0 }, { "users": 2981, "value": 0 }, { "users": 3170, "value": 0 }, { "users": 3362, "value": 0 }, { "users": 3545, "value": 0 }, { "users": 3738, "value": 0 }, { "users": 3925, "value": 0 }, { "users": 4109, "value": 0 }, { "users": 4288, "value": 0 }, { "users": 4470, "value": 0 }, { "users": 4640, "value": 0 }, { "users": 4821, "value": 0 }, { "users": 4996, "value": 0 }, { "users": 5000, "value": 0 }, { "users": 5000, "value": 0 }, { "users": 4998, "value": 0 }, { "users": 4995, "value": 0 }, { "users": 4992, "value": 0 }, { "users": 4988, "value": 0 }, { "users": 4985, "value": 0 }, { "users": 4982, "value": 0 }, { "users": 4979, "value": 0 }, { "users": 4975, "value": 0 }, { "users": 4972, "value": 0 }],
+            "response_time_percentile_50": [{ "users": 426, "value": 1000 }, { "users": 882, "value": 1000 }, { "users": 1304, "value": 1000 }, { "users": 1657, "value": 1000 }, { "users": 1945, "value": 1000 }, { "users": 2177, "value": 1000 }, { "users": 2395, "value": 1100 }, { "users": 2593, "value": 1100 }, { "users": 2789, "value": 1100 }, { "users": 2981, "value": 1100 }, { "users": 3170, "value": 1100 }, { "users": 3362, "value": 1100 }, { "users": 3545, "value": 1100 }, { "users": 3738, "value": 1100 }, { "users": 3925, "value": 1100 }, { "users": 4109, "value": 1400 }, { "users": 4288, "value": 1300 }, { "users": 4470, "value": 1100 }, { "users": 4640, "value": 1100 }, { "users": 4821, "value": 1100 }, { "users": 4996, "value": 1100 }, { "users": 5000, "value": 1100 }, { "users": 5000, "value": 1200 }, { "users": 4998, "value": 1200 }, { "users": 4995, "value": 1200 }, { "users": 4992, "value": 1300 }, { "users": 4988, "value": 1200 }, { "users": 4985, "value": 1100 }, { "users": 4982, "value": 1100 }, { "users": 4979, "value": 1100 }, { "users": 4975, "value": 1100 }, { "users": 4972, "value": 1100 }],
+            "response_time_percentile_95": [{ "users": 426, "value": 1000 }, { "users": 882, "value": 1000 }, { "users": 1304, "value": 1000 }, { "users": 1657, "value": 1000 }, { "users": 1945, "value": 1100 }, { "users": 2177, "value": 1200 }, { "users": 2395, "value": 1400 }, { "users": 2593, "value": 1700 }, { "users": 2789, "value": 1500 }, { "users": 2981, "value": 1400 }, { "users": 3170, "value": 1300 }, { "users": 3362, "value": 1200 }, { "users": 3545, "value": 1500 }, { "users": 3738, "value": 1500 }, { "users": 3925, "value": 1600 }, { "users": 4109, "value": 2400 }, { "users": 4288, "value": 2400 }, { "users": 4470, "value": 1300 }, { "users": 4640, "value": 1400 }, { "users": 4821, "value": 1500 }, { "users": 4996, "value": 1700 }, { "users": 5000, "value": 1600 }, { "users": 5000, "value": 1500 }, { "users": 4998, "value": 1400 }, { "users": 4995, "value": 1900 }, { "users": 4992, "value": 1900 }, { "users": 4988, "value": 1500 }, { "users": 4985, "value": 1500 }, { "users": 4982, "value": 1500 }, { "users": 4979, "value": 1400 }, { "users": 4975, "value": 1700 }, { "users": 4972, "value": 1600 }],
+        };
+        var falcon_async_uvircorn = {
+            "time": ["17:30:46", "17:30:51", "17:30:56", "17:31:01", "17:31:06", "17:31:11", "17:31:16", "17:31:21", "17:31:26", "17:31:31", "17:31:36", "17:31:41", "17:31:46", "17:31:51", "17:31:56", "17:32:01", "17:32:06", "17:32:11", "17:32:16", "17:32:21", "17:32:26", "17:32:31", "17:32:36"],
+            "user_count": [{ "value": 295 }, { "value": 749 }, { "value": 1207 }, { "value": 1623 }, { "value": 1951 }, { "value": 2183 }, { "value": 2390 }, { "value": 2584 }, { "value": 2774 }, { "value": 2971 }, { "value": 3161 }, { "value": 3346 }, { "value": 3531 }, { "value": 3716 }, { "value": 3901 }, { "value": 4094 }, { "value": 4278 }, { "value": 4459 }, { "value": 4639 }, { "value": 4819 }, { "value": 5000 }, { "value": 4999 }, { "value": 4996 }],
+            "current_rps": [{ "users": 295, "value": 2.5 }, { "users": 749, "value": 199.42857142857142 }, { "users": 1207, "value": 506.2 }, { "users": 1623, "value": 952.5 }, { "users": 1951, "value": 1389.6 }, { "users": 2183, "value": 1685.4 }, { "users": 2390, "value": 1841.1 }, { "users": 2584, "value": 1904.6 }, { "users": 2774, "value": 1879.3 }, { "users": 2971, "value": 1883.4 }, { "users": 3161, "value": 1888.8 }, { "users": 3346, "value": 1874.9 }, { "users": 3531, "value": 1837.8 }, { "users": 3716, "value": 1782.6 }, { "users": 3901, "value": 1808.8 }, { "users": 4094, "value": 1836.4 }, { "users": 4278, "value": 1843.6 }, { "users": 4459, "value": 1844.5 }, { "users": 4639, "value": 1777.0 }, { "users": 4819, "value": 1747.3 }, { "users": 5000, "value": 1746.1 }, { "users": 4999, "value": 1780.8 }, { "users": 4996, "value": 1855.7 }],
+            "current_fail_per_sec": [{ "users": 295, "value": 0 }, { "users": 749, "value": 0 }, { "users": 1207, "value": 0 }, { "users": 1623, "value": 0 }, { "users": 1951, "value": 0 }, { "users": 2183, "value": 0 }, { "users": 2390, "value": 0 }, { "users": 2584, "value": 0 }, { "users": 2774, "value": 0 }, { "users": 2971, "value": 0 }, { "users": 3161, "value": 0 }, { "users": 3346, "value": 0 }, { "users": 3531, "value": 0 }, { "users": 3716, "value": 0 }, { "users": 3901, "value": 0 }, { "users": 4094, "value": 0 }, { "users": 4278, "value": 0 }, { "users": 4459, "value": 0 }, { "users": 4639, "value": 0 }, { "users": 4819, "value": 0 }, { "users": 5000, "value": 0 }, { "users": 4999, "value": 0 }, { "users": 4996, "value": 0 }],
+            "response_time_percentile_50": [{ "users": 295, "value": 1000 }, { "users": 749, "value": 1000 }, { "users": 1207, "value": 1000 }, { "users": 1623, "value": 1000 }, { "users": 1951, "value": 1000 }, { "users": 2183, "value": 1000 }, { "users": 2390, "value": 1000 }, { "users": 2584, "value": 1000 }, { "users": 2774, "value": 1000 }, { "users": 2971, "value": 1000 }, { "users": 3161, "value": 1000 }, { "users": 3346, "value": 1000 }, { "users": 3531, "value": 1000 }, { "users": 3716, "value": 1000 }, { "users": 3901, "value": 1000 }, { "users": 4094, "value": 1000 }, { "users": 4278, "value": 1000 }, { "users": 4459, "value": 1000 }, { "users": 4639, "value": 1000 }, { "users": 4819, "value": 1000 }, { "users": 5000, "value": 1000 }, { "users": 4999, "value": 1000 }, { "users": 4996, "value": 1000 }],
+            "response_time_percentile_95": [{ "users": 295, "value": 1000 }, { "users": 749, "value": 1000 }, { "users": 1207, "value": 1000 }, { "users": 1623, "value": 1000 }, { "users": 1951, "value": 1000 }, { "users": 2183, "value": 1100 }, { "users": 2390, "value": 1100 }, { "users": 2584, "value": 1100 }, { "users": 2774, "value": 1100 }, { "users": 2971, "value": 1100 }, { "users": 3161, "value": 1100 }, { "users": 3346, "value": 1100 }, { "users": 3531, "value": 1100 }, { "users": 3716, "value": 1200 }, { "users": 3901, "value": 1100 }, { "users": 4094, "value": 1100 }, { "users": 4278, "value": 1100 }, { "users": 4459, "value": 1100 }, { "users": 4639, "value": 1200 }, { "users": 4819, "value": 1200 }, { "users": 5000, "value": 1200 }, { "users": 4999, "value": 1200 }, { "users": 4996, "value": 1200 }],
+        };
+
+        var falcon_sync_bjoern = {
+            "time": ["19:37:37", "19:37:42", "19:37:47", "19:37:52", "19:37:57", "19:38:02", "19:38:07", "19:38:12", "19:38:17", "19:38:22", "19:38:27", "19:38:32", "19:38:37", "19:38:42", "19:38:47", "19:38:52", "19:38:57", "19:39:02", "19:39:07"],
+            "user_count": [{ "value": 44 }, { "value": 492 }, { "value": 932 }, { "value": 1391 }, { "value": 1842 }, { "value": 2295 }, { "value": 2758 }, { "value": 3206 }, { "value": 3668 }, { "value": 4120 }, { "value": 4581 }, { "value": 5000 }, { "value": 5000 }, { "value": 5000 }, { "value": 5000 }, { "value": 5000 }, { "value": 5000 }, { "value": 5000 }, { "value": 5000 }],
+            "current_rps": [{ "users": 44, "value": 0 }, { "users": 492, "value": 1.6666666666666667 }, { "users": 932, "value": 3.125 }, { "users": 1391, "value": 4.5 }, { "users": 1842, "value": 4.0 }, { "users": 2295, "value": 5.0 }, { "users": 2758, "value": 5.0 }, { "users": 3206, "value": 3.5 }, { "users": 3668, "value": 4.5 }, { "users": 4120, "value": 4.4 }, { "users": 4581, "value": 4.4 }, { "users": 5000, "value": 5.5 }, { "users": 5000, "value": 5.4 }, { "users": 5000, "value": 21.1 }, { "users": 5000, "value": 66.7 }, { "users": 5000, "value": 94.5 }, { "users": 5000, "value": 93.7 }, { "users": 5000, "value": 92.0 }, { "users": 5000, "value": 92.7 }],
+            "current_fail_per_sec": [{ "users": 44, "value": 0 }, { "users": 492, "value": 0 }, { "users": 932, "value": 0 }, { "users": 1391, "value": 0 }, { "users": 1842, "value": 0 }, { "users": 2295, "value": 0 }, { "users": 2758, "value": 0 }, { "users": 3206, "value": 0 }, { "users": 3668, "value": 0 }, { "users": 4120, "value": 0 }, { "users": 4581, "value": 0 }, { "users": 5000, "value": 0 }, { "users": 5000, "value": 0 }, { "users": 5000, "value": 18.2 }, { "users": 5000, "value": 63.7 }, { "users": 5000, "value": 89.1 }, { "users": 5000, "value": 88.8 }, { "users": 5000, "value": 89.5 }, { "users": 5000, "value": 89.6 }],
+            "response_time_percentile_50": [{ "users": 44, "value": 0 }, { "users": 492, "value": 4000 }, { "users": 932, "value": 4900 }, { "users": 1391, "value": 7000 }, { "users": 1842, "value": 9000 }, { "users": 2295, "value": 10000 }, { "users": 2758, "value": 11000 }, { "users": 3206, "value": 13000 }, { "users": 3668, "value": 13000 }, { "users": 4120, "value": 14000 }, { "users": 4581, "value": 15000 }, { "users": 5000, "value": 16000 }, { "users": 5000, "value": 16000 }, { "users": 5000, "value": 60000 }, { "users": 5000, "value": 60000 }, { "users": 5000, "value": 60000 }, { "users": 5000, "value": 60000 }, { "users": 5000, "value": 60000 }, { "users": 5000, "value": 60000 }],
+            "response_time_percentile_95": [{ "users": 44, "value": 0 }, { "users": 492, "value": 4900 }, { "users": 932, "value": 9800 }, { "users": 1391, "value": 15000 }, { "users": 1842, "value": 19000 }, { "users": 2295, "value": 22000 }, { "users": 2758, "value": 26000 }, { "users": 3206, "value": 34000 }, { "users": 3668, "value": 39000 }, { "users": 4120, "value": 39000 }, { "users": 4581, "value": 45000 }, { "users": 5000, "value": 50000 }, { "users": 5000, "value": 56000 }, { "users": 5000, "value": 60000 }, { "users": 5000, "value": 60000 }, { "users": 5000, "value": 60000 }, { "users": 5000, "value": 60000 }, { "users": 5000, "value": 60000 }, { "users": 5000, "value": 60000 }],
+        };
+        var falcon_sync_gunicorn_eventlet = {
+            "time": ["19:27:40", "19:27:45", "19:27:50", "19:27:55", "19:28:00", "19:28:05", "19:28:10", "19:28:15", "19:28:20", "19:28:25", "19:28:30", "19:28:35", "19:28:40", "19:28:45", "19:28:50", "19:28:55", "19:29:01", "19:29:06", "19:29:11", "19:29:16", "19:29:21", "19:29:26", "19:29:31", "19:29:36"],
+            "user_count": [{ "value": 52 }, { "value": 512 }, { "value": 970 }, { "value": 1436 }, { "value": 1790 }, { "value": 2046 }, { "value": 2261 }, { "value": 2454 }, { "value": 2647 }, { "value": 2837 }, { "value": 3034 }, { "value": 3219 }, { "value": 3407 }, { "value": 3591 }, { "value": 3781 }, { "value": 3964 }, { "value": 4149 }, { "value": 4335 }, { "value": 4525 }, { "value": 4701 }, { "value": 4879 }, { "value": 5000 }, { "value": 5000 }, { "value": 4997 }],
+            "current_rps": [{ "users": 52, "value": 0 }, { "users": 512, "value": 80.33333333333333 }, { "users": 970, "value": 306.5 }, { "users": 1436, "value": 670.7 }, { "users": 1790, "value": 1130.2 }, { "users": 2046, "value": 1518.1 }, { "users": 2261, "value": 1744.9 }, { "users": 2454, "value": 1835.8 }, { "users": 2647, "value": 1893.1 }, { "users": 2837, "value": 1910.7 }, { "users": 3034, "value": 1860.0 }, { "users": 3219, "value": 1843.5 }, { "users": 3407, "value": 1866.4 }, { "users": 3591, "value": 1862.3 }, { "users": 3781, "value": 1813.8 }, { "users": 3964, "value": 1772.5 }, { "users": 4149, "value": 1803.1 }, { "users": 4335, "value": 1828.5 }, { "users": 4525, "value": 1850.8 }, { "users": 4701, "value": 1803.8 }, { "users": 4879, "value": 1757.3 }, { "users": 5000, "value": 1801.1 }, { "users": 5000, "value": 1784.3 }, { "users": 4997, "value": 1744.6 }],
+            "current_fail_per_sec": [{ "users": 52, "value": 0 }, { "users": 512, "value": 0 }, { "users": 970, "value": 0 }, { "users": 1436, "value": 0 }, { "users": 1790, "value": 0 }, { "users": 2046, "value": 0 }, { "users": 2261, "value": 0 }, { "users": 2454, "value": 0 }, { "users": 2647, "value": 0 }, { "users": 2837, "value": 0 }, { "users": 3034, "value": 0 }, { "users": 3219, "value": 0 }, { "users": 3407, "value": 0 }, { "users": 3591, "value": 0 }, { "users": 3781, "value": 0 }, { "users": 3964, "value": 0 }, { "users": 4149, "value": 0 }, { "users": 4335, "value": 0 }, { "users": 4525, "value": 0 }, { "users": 4701, "value": 0 }, { "users": 4879, "value": 0 }, { "users": 5000, "value": 0 }, { "users": 5000, "value": 0 }, { "users": 4997, "value": 0 }],
+            "response_time_percentile_50": [{ "users": 52, "value": 0 }, { "users": 512, "value": 1000 }, { "users": 970, "value": 1000 }, { "users": 1436, "value": 1000 }, { "users": 1790, "value": 1000 }, { "users": 2046, "value": 1000 }, { "users": 2261, "value": 1000 }, { "users": 2454, "value": 1000 }, { "users": 2647, "value": 1000 }, { "users": 2837, "value": 1000 }, { "users": 3034, "value": 1000 }, { "users": 3219, "value": 1000 }, { "users": 3407, "value": 1000 }, { "users": 3591, "value": 1000 }, { "users": 3781, "value": 1000 }, { "users": 3964, "value": 1000 }, { "users": 4149, "value": 1000 }, { "users": 4335, "value": 1100 }, { "users": 4525, "value": 1100 }, { "users": 4701, "value": 1000 }, { "users": 4879, "value": 1000 }, { "users": 5000, "value": 1000 }, { "users": 5000, "value": 1000 }, { "users": 4997, "value": 1000 }],
+            "response_time_percentile_95": [{ "users": 52, "value": 0 }, { "users": 512, "value": 1000 }, { "users": 970, "value": 1000 }, { "users": 1436, "value": 1000 }, { "users": 1790, "value": 1100 }, { "users": 2046, "value": 1100 }, { "users": 2261, "value": 1100 }, { "users": 2454, "value": 1100 }, { "users": 2647, "value": 1100 }, { "users": 2837, "value": 1100 }, { "users": 3034, "value": 1100 }, { "users": 3219, "value": 1100 }, { "users": 3407, "value": 1200 }, { "users": 3591, "value": 1200 }, { "users": 3781, "value": 1200 }, { "users": 3964, "value": 1200 }, { "users": 4149, "value": 1300 }, { "users": 4335, "value": 1400 }, { "users": 4525, "value": 1400 }, { "users": 4701, "value": 1200 }, { "users": 4879, "value": 1200 }, { "users": 5000, "value": 1200 }, { "users": 5000, "value": 1300 }, { "users": 4997, "value": 1300 }],
+        };
+        var falcon_sync_gunicorn_gevent = {
+            "time": ["19:31:11", "19:31:16", "19:31:21", "19:31:26", "19:31:31", "19:31:36", "19:31:41", "19:31:46", "19:31:51", "19:31:56", "19:32:01", "19:32:06", "19:32:11", "19:32:16", "19:32:21", "19:32:26", "19:32:31", "19:32:36", "19:32:41", "19:32:46", "19:32:51", "19:32:56", "19:33:01", "19:33:07", "19:33:12"],
+            "user_count": [{ "value": 278 }, { "value": 713 }, { "value": 1163 }, { "value": 1583 }, { "value": 1897 }, { "value": 2112 }, { "value": 2330 }, { "value": 2525 }, { "value": 2718 }, { "value": 2905 }, { "value": 3094 }, { "value": 3286 }, { "value": 3475 }, { "value": 3667 }, { "value": 3847 }, { "value": 4032 }, { "value": 4218 }, { "value": 4409 }, { "value": 4586 }, { "value": 4769 }, { "value": 4957 }, { "value": 5000 }, { "value": 5000 }, { "value": 5000 }, { "value": 4998 }],
+            "current_rps": [{ "users": 278, "value": 0 }, { "users": 713, "value": 184.83333333333334 }, { "users": 1163, "value": 440.8 }, { "users": 1583, "value": 888.2 }, { "users": 1897, "value": 1291.8 }, { "users": 2112, "value": 1622.8 }, { "users": 2330, "value": 1768.8 }, { "users": 2525, "value": 1776.9 }, { "users": 2718, "value": 1881.7 }, { "users": 2905, "value": 1929.9 }, { "users": 3094, "value": 1883.8 }, { "users": 3286, "value": 1830.1 }, { "users": 3475, "value": 1825.0 }, { "users": 3667, "value": 1837.5 }, { "users": 3847, "value": 1832.0 }, { "users": 4032, "value": 1869.4 }, { "users": 4218, "value": 1811.8 }, { "users": 4409, "value": 1753.3 }, { "users": 4586, "value": 1809.5 }, { "users": 4769, "value": 1861.4 }, { "users": 4957, "value": 1786.8 }, { "users": 5000, "value": 1735.1 }, { "users": 5000, "value": 1834.5 }, { "users": 5000, "value": 1824.7 }, { "users": 4998, "value": 1815.0 }],
+            "current_fail_per_sec": [{ "users": 278, "value": 0 }, { "users": 713, "value": 0 }, { "users": 1163, "value": 0 }, { "users": 1583, "value": 0 }, { "users": 1897, "value": 0 }, { "users": 2112, "value": 0 }, { "users": 2330, "value": 0 }, { "users": 2525, "value": 0 }, { "users": 2718, "value": 0 }, { "users": 2905, "value": 0 }, { "users": 3094, "value": 0 }, { "users": 3286, "value": 0 }, { "users": 3475, "value": 0 }, { "users": 3667, "value": 0 }, { "users": 3847, "value": 0 }, { "users": 4032, "value": 0 }, { "users": 4218, "value": 0 }, { "users": 4409, "value": 0 }, { "users": 4586, "value": 0 }, { "users": 4769, "value": 0 }, { "users": 4957, "value": 0 }, { "users": 5000, "value": 0 }, { "users": 5000, "value": 0 }, { "users": 5000, "value": 0 }, { "users": 4998, "value": 0 }],
+            "response_time_percentile_50": [{ "users": 278, "value": 1000 }, { "users": 713, "value": 1000 }, { "users": 1163, "value": 1000 }, { "users": 1583, "value": 1000 }, { "users": 1897, "value": 1000 }, { "users": 2112, "value": 1000 }, { "users": 2330, "value": 1000 }, { "users": 2525, "value": 1000 }, { "users": 2718, "value": 1000 }, { "users": 2905, "value": 1000 }, { "users": 3094, "value": 1000 }, { "users": 3286, "value": 1000 }, { "users": 3475, "value": 1000 }, { "users": 3667, "value": 1000 }, { "users": 3847, "value": 1000 }, { "users": 4032, "value": 1000 }, { "users": 4218, "value": 1000 }, { "users": 4409, "value": 1000 }, { "users": 4586, "value": 1000 }, { "users": 4769, "value": 1000 }, { "users": 4957, "value": 1000 }, { "users": 5000, "value": 1000 }, { "users": 5000, "value": 1000 }, { "users": 5000, "value": 1000 }, { "users": 4998, "value": 1000 }],
+            "response_time_percentile_95": [{ "users": 278, "value": 1000 }, { "users": 713, "value": 1000 }, { "users": 1163, "value": 1000 }, { "users": 1583, "value": 1000 }, { "users": 1897, "value": 1000 }, { "users": 2112, "value": 1100 }, { "users": 2330, "value": 1100 }, { "users": 2525, "value": 1100 }, { "users": 2718, "value": 1100 }, { "users": 2905, "value": 1100 }, { "users": 3094, "value": 1100 }, { "users": 3286, "value": 1200 }, { "users": 3475, "value": 1200 }, { "users": 3667, "value": 1200 }, { "users": 3847, "value": 1200 }, { "users": 4032, "value": 1200 }, { "users": 4218, "value": 1200 }, { "users": 4409, "value": 1200 }, { "users": 4586, "value": 1200 }, { "users": 4769, "value": 1200 }, { "users": 4957, "value": 1200 }, { "users": 5000, "value": 1200 }, { "users": 5000, "value": 1200 }, { "users": 5000, "value": 1200 }, { "users": 4998, "value": 1200 }],
+        };
+        var falcon_sync_gunicorn_gthreads = {
+            "time": ["19:36:12", "19:36:17", "19:36:22", "19:36:27", "19:36:32", "19:36:37", "19:36:42", "19:36:47", "19:36:52", "19:36:57"],
+            "user_count": [{ "value": 432 }, { "value": 886 }, { "value": 1344 }, { "value": 1799 }, { "value": 2257 }, { "value": 2696 }, { "value": 3139 }, { "value": 3596 }, { "value": 4038 }, { "value": 4494 }],
+            "current_rps": [{ "users": 432, "value": 16.333333333333332 }, { "users": 886, "value": 30.125 }, { "users": 1344, "value": 39.0 }, { "users": 1799, "value": 39.6 }, { "users": 2257, "value": 39.6 }, { "users": 2696, "value": 39.6 }, { "users": 3139, "value": 39.6 }, { "users": 3596, "value": 39.6 }, { "users": 4038, "value": 39.8 }, { "users": 4494, "value": 40.0 }],
+            "current_fail_per_sec": [{ "users": 432, "value": 0 }, { "users": 886, "value": 0 }, { "users": 1344, "value": 0 }, { "users": 1799, "value": 0 }, { "users": 2257, "value": 0 }, { "users": 2696, "value": 0 }, { "users": 3139, "value": 0 }, { "users": 3596, "value": 0 }, { "users": 4038, "value": 0 }, { "users": 4494, "value": 0 }],
+            "response_time_percentile_50": [{ "users": 432, "value": 1300 }, { "users": 886, "value": 2600 }, { "users": 1344, "value": 5500 }, { "users": 1799, "value": 7400 }, { "users": 2257, "value": 9400 }, { "users": 2696, "value": 12000 }, { "users": 3139, "value": 15000 }, { "users": 3596, "value": 17000 }, { "users": 4038, "value": 21000 }, { "users": 4494, "value": 24000 }],
+            "response_time_percentile_95": [{ "users": 432, "value": 3700 }, { "users": 886, "value": 6800 }, { "users": 1344, "value": 11000 }, { "users": 1799, "value": 15000 }, { "users": 2257, "value": 19000 }, { "users": 2696, "value": 24000 }, { "users": 3139, "value": 28000 }, { "users": 3596, "value": 33000 }, { "users": 4038, "value": 37000 }, { "users": 4494, "value": 41000 }],
+        };
+        var falcon_sync_gunicorn_sync = {
+            "time": ["19:25:50", "19:25:55", "19:26:00", "19:26:05", "19:26:10", "19:26:15", "19:26:20", "19:26:25", "19:26:30", "19:26:35", "19:26:40", "19:26:45", "19:26:50"],
+            "user_count": [{ "value": 238 }, { "value": 689 }, { "value": 1145 }, { "value": 1594 }, { "value": 2037 }, { "value": 2492 }, { "value": 2937 }, { "value": 3392 }, { "value": 3831 }, { "value": 4286 }, { "value": 4723 }, { "value": 5000 }, { "value": 3740 }],
+            "current_rps": [{ "users": 238, "value": 0 }, { "users": 689, "value": 25.833333333333332 }, { "users": 1145, "value": 35.4 }, { "users": 1594, "value": 39.9 }, { "users": 2037, "value": 39.9 }, { "users": 2492, "value": 39.6 }, { "users": 2937, "value": 39.5 }, { "users": 3392, "value": 39.5 }, { "users": 3831, "value": 39.5 }, { "users": 4286, "value": 39.8 }, { "users": 4723, "value": 40.0 }, { "users": 5000, "value": 40.0 }, { "users": 3740, "value": 39.9 }],
+            "current_fail_per_sec": [{ "users": 238, "value": 0 }, { "users": 689, "value": 0 }, { "users": 1145, "value": 0 }, { "users": 1594, "value": 0 }, { "users": 2037, "value": 0 }, { "users": 2492, "value": 0 }, { "users": 2937, "value": 0 }, { "users": 3392, "value": 0 }, { "users": 3831, "value": 0 }, { "users": 4286, "value": 0 }, { "users": 4723, "value": 0 }, { "users": 5000, "value": 0 }, { "users": 3740, "value": 0 }],
+            "response_time_percentile_50": [{ "users": 238, "value": 1000 }, { "users": 689, "value": 2500 }, { "users": 1145, "value": 4600 }, { "users": 1594, "value": 8000 }, { "users": 2037, "value": 12000 }, { "users": 2492, "value": 15000 }, { "users": 2937, "value": 18000 }, { "users": 3392, "value": 21000 }, { "users": 3831, "value": 25000 }, { "users": 4286, "value": 28000 }, { "users": 4723, "value": 30000 }, { "users": 5000, "value": 33000 }, { "users": 3740, "value": 36000 }],
+            "response_time_percentile_95": [{ "users": 238, "value": 1900 }, { "users": 689, "value": 5500 }, { "users": 1145, "value": 8800 }, { "users": 1594, "value": 13000 }, { "users": 2037, "value": 17000 }, { "users": 2492, "value": 21000 }, { "users": 2937, "value": 26000 }, { "users": 3392, "value": 30000 }, { "users": 3831, "value": 34000 }, { "users": 4286, "value": 38000 }, { "users": 4723, "value": 42000 }, { "users": 5000, "value": 46000 }, { "users": 3740, "value": 50000 }],
+        };
+        var falcon_sync_gunicorn_tornado = {
+            "time": ["19:34:42", "19:34:47", "19:34:52", "19:34:57", "19:35:02", "19:35:07", "19:35:12", "19:35:17", "19:35:22", "19:35:27"],
+            "user_count": [{ "value": 18 }, { "value": 475 }, { "value": 905 }, { "value": 1361 }, { "value": 1807 }, { "value": 2261 }, { "value": 2709 }, { "value": 3145 }, { "value": 3601 }, { "value": 4045 }],
+            "current_rps": [{ "users": 18, "value": 0 }, { "users": 475, "value": 3.3333333333333335 }, { "users": 905, "value": 4.375 }, { "users": 1361, "value": 5.0 }, { "users": 1807, "value": 5.0 }, { "users": 2261, "value": 5.0 }, { "users": 2709, "value": 5.0 }, { "users": 3145, "value": 4.9 }, { "users": 3601, "value": 4.3 }, { "users": 4045, "value": 4.4 }],
+            "current_fail_per_sec": [{ "users": 18, "value": 0 }, { "users": 475, "value": 0 }, { "users": 905, "value": 0 }, { "users": 1361, "value": 0 }, { "users": 1807, "value": 0 }, { "users": 2261, "value": 0 }, { "users": 2709, "value": 0 }, { "users": 3145, "value": 0 }, { "users": 3601, "value": 0 }, { "users": 4045, "value": 0 }],
+            "response_time_percentile_50": [{ "users": 18, "value": 0 }, { "users": 475, "value": 2000 }, { "users": 905, "value": 4300 }, { "users": 1361, "value": 9100 }, { "users": 1807, "value": 13000 }, { "users": 2261, "value": 18000 }, { "users": 2709, "value": 24000 }, { "users": 3145, "value": 28000 }, { "users": 3601, "value": 30000 }, { "users": 4045, "value": 33000 }],
+            "response_time_percentile_95": [{ "users": 18, "value": 0 }, { "users": 475, "value": 4300 }, { "users": 905, "value": 9000 }, { "users": 1361, "value": 14000 }, { "users": 1807, "value": 19000 }, { "users": 2261, "value": 24000 }, { "users": 2709, "value": 29000 }, { "users": 3145, "value": 31000 }, { "users": 3601, "value": 35000 }, { "users": 4045, "value": 39000 }],
+        };
+        var falcon_sync_uwsgi_gevent = {
+            "time": ["20:00:53", "20:00:58", "20:01:03", "20:01:08", "20:01:13", "20:01:18"],
+            "user_count": [{ "value": 125 }, { "value": 575 }, { "value": 1032 }, { "value": 1490 }, { "value": 1941 }, { "value": 2402 }],
+            "current_rps": [{ "users": 125, "value": 0 }, { "users": 575, "value": 3.0 }, { "users": 1032, "value": 4.0 }, { "users": 1490, "value": 5.0 }, { "users": 1941, "value": 5.0 }, { "users": 2402, "value": 5.0 }],
+            "current_fail_per_sec": [{ "users": 125, "value": 0 }, { "users": 575, "value": 0 }, { "users": 1032, "value": 0 }, { "users": 1490, "value": 0 }, { "users": 1941, "value": 0 }, { "users": 2402, "value": 0 }],
+            "response_time_percentile_50": [{ "users": 125, "value": 1000 }, { "users": 575, "value": 3800 }, { "users": 1032, "value": 6700 }, { "users": 1490, "value": 11000 }, { "users": 1941, "value": 16000 }, { "users": 2402, "value": 21000 }],
+            "response_time_percentile_95": [{ "users": 125, "value": 1000 }, { "users": 575, "value": 5700 }, { "users": 1032, "value": 10000 }, { "users": 1490, "value": 15000 }, { "users": 1941, "value": 20000 }, { "users": 2402, "value": 22000 }],
+        };
+        var falcon_sync_uwsgi = {
+            "time": ["19:43:17", "19:43:22", "19:43:27", "19:43:32", "19:43:37", "19:43:42", "19:43:47", "19:43:52", "19:43:57", "19:44:02", "19:44:07", "19:44:12", "19:44:17", "19:44:22"],
+            "user_count": [{ "value": 229 }, { "value": 666 }, { "value": 1124 }, { "value": 1587 }, { "value": 2039 }, { "value": 2498 }, { "value": 2947 }, { "value": 3395 }, { "value": 3855 }, { "value": 4298 }, { "value": 4759 }, { "value": 5000 }, { "value": 5000 }, { "value": 5000 }],
+            "current_rps": [{ "users": 229, "value": 0 }, { "users": 666, "value": 32.0 }, { "users": 1124, "value": 36.0 }, { "users": 1587, "value": 40.0 }, { "users": 2039, "value": 39.8 }, { "users": 2498, "value": 39.6 }, { "users": 2947, "value": 39.6 }, { "users": 3395, "value": 39.8 }, { "users": 3855, "value": 39.7 }, { "users": 4298, "value": 39.7 }, { "users": 4759, "value": 39.6 }, { "users": 5000, "value": 39.2 }, { "users": 5000, "value": 39.6 }, { "users": 5000, "value": 62.9 }],
+            "current_fail_per_sec": [{ "users": 229, "value": 0 }, { "users": 666, "value": 0 }, { "users": 1124, "value": 0 }, { "users": 1587, "value": 0 }, { "users": 2039, "value": 0 }, { "users": 2498, "value": 0 }, { "users": 2947, "value": 0 }, { "users": 3395, "value": 0 }, { "users": 3855, "value": 0 }, { "users": 4298, "value": 0 }, { "users": 4759, "value": 0 }, { "users": 5000, "value": 0 }, { "users": 5000, "value": 0 }, { "users": 5000, "value": 23.0 }],
+            "response_time_percentile_50": [{ "users": 229, "value": 1600 }, { "users": 666, "value": 3000 }, { "users": 1124, "value": 3200 }, { "users": 1587, "value": 3800 }, { "users": 2039, "value": 3800 }, { "users": 2498, "value": 3800 }, { "users": 2947, "value": 3800 }, { "users": 3395, "value": 3800 }, { "users": 3855, "value": 3800 }, { "users": 4298, "value": 3800 }, { "users": 4759, "value": 3800 }, { "users": 5000, "value": 3800 }, { "users": 5000, "value": 3800 }, { "users": 5000, "value": 60000 }],
+            "response_time_percentile_95": [{ "users": 229, "value": 1600 }, { "users": 666, "value": 4300 }, { "users": 1124, "value": 4800 }, { "users": 1587, "value": 5000 }, { "users": 2039, "value": 5100 }, { "users": 2498, "value": 5200 }, { "users": 2947, "value": 5100 }, { "users": 3395, "value": 5000 }, { "users": 3855, "value": 4800 }, { "users": 4298, "value": 5100 }, { "users": 4759, "value": 8100 }, { "users": 5000, "value": 11000 }, { "users": 5000, "value": 60000 }, { "users": 5000, "value": 60000 }],
+        };
+        var fastapi_async_gunicorn_h11 = {
+            "time": ["17:19:07", "17:19:12", "17:19:17", "17:19:22", "17:19:27", "17:19:32", "17:19:38", "17:19:43", "17:19:48", "17:19:53", "17:19:58", "17:20:03", "17:20:08", "17:20:13", "17:20:18", "17:20:23", "17:20:28", "17:20:33", "17:20:38", "17:20:43", "17:20:48", "17:20:53", "17:20:58"],
+            "user_count": [{ "value": 457 }, { "value": 914 }, { "value": 1372 }, { "value": 1805 }, { "value": 2062 }, { "value": 2287 }, { "value": 2471 }, { "value": 2663 }, { "value": 2851 }, { "value": 3042 }, { "value": 3233 }, { "value": 3424 }, { "value": 3609 }, { "value": 3793 }, { "value": 3974 }, { "value": 4157 }, { "value": 4348 }, { "value": 4531 }, { "value": 4707 }, { "value": 4889 }, { "value": 5000 }, { "value": 5000 }, { "value": 4997 }],
+            "current_rps": [{ "users": 457, "value": 32.0 }, { "users": 914, "value": 239.25 }, { "users": 1372, "value": 594.6 }, { "users": 1805, "value": 1055.2 }, { "users": 2062, "value": 1463.3 }, { "users": 2287, "value": 1772.0 }, { "users": 2471, "value": 1890.0 }, { "users": 2663, "value": 1851.8 }, { "users": 2851, "value": 1857.8 }, { "users": 3042, "value": 1887.9 }, { "users": 3233, "value": 1864.2 }, { "users": 3424, "value": 1867.0 }, { "users": 3609, "value": 1820.2 }, { "users": 3793, "value": 1802.2 }, { "users": 3974, "value": 1783.1 }, { "users": 4157, "value": 1780.6 }, { "users": 4348, "value": 1818.7 }, { "users": 4531, "value": 1814.2 }, { "users": 4707, "value": 1797.3 }, { "users": 4889, "value": 1759.4 }, { "users": 5000, "value": 1766.2 }, { "users": 5000, "value": 1804.9 }, { "users": 4997, "value": 1807.4 }],
+            "current_fail_per_sec": [{ "users": 457, "value": 0 }, { "users": 914, "value": 0 }, { "users": 1372, "value": 0 }, { "users": 1805, "value": 0 }, { "users": 2062, "value": 0 }, { "users": 2287, "value": 0 }, { "users": 2471, "value": 0 }, { "users": 2663, "value": 0 }, { "users": 2851, "value": 0 }, { "users": 3042, "value": 0 }, { "users": 3233, "value": 0 }, { "users": 3424, "value": 0 }, { "users": 3609, "value": 0 }, { "users": 3793, "value": 0 }, { "users": 3974, "value": 0 }, { "users": 4157, "value": 0 }, { "users": 4348, "value": 0 }, { "users": 4531, "value": 0 }, { "users": 4707, "value": 0 }, { "users": 4889, "value": 0 }, { "users": 5000, "value": 0 }, { "users": 5000, "value": 0 }, { "users": 4997, "value": 0 }],
+            "response_time_percentile_50": [{ "users": 457, "value": 1000 }, { "users": 914, "value": 1000 }, { "users": 1372, "value": 1000 }, { "users": 1805, "value": 1000 }, { "users": 2062, "value": 1000 }, { "users": 2287, "value": 1000 }, { "users": 2471, "value": 1000 }, { "users": 2663, "value": 1000 }, { "users": 2851, "value": 1000 }, { "users": 3042, "value": 1000 }, { "users": 3233, "value": 1000 }, { "users": 3424, "value": 1000 }, { "users": 3609, "value": 1000 }, { "users": 3793, "value": 1000 }, { "users": 3974, "value": 1000 }, { "users": 4157, "value": 1000 }, { "users": 4348, "value": 1000 }, { "users": 4531, "value": 1000 }, { "users": 4707, "value": 1000 }, { "users": 4889, "value": 1000 }, { "users": 5000, "value": 1000 }, { "users": 5000, "value": 1000 }, { "users": 4997, "value": 1000 }],
+            "response_time_percentile_95": [{ "users": 457, "value": 1000 }, { "users": 914, "value": 1000 }, { "users": 1372, "value": 1000 }, { "users": 1805, "value": 1000 }, { "users": 2062, "value": 1000 }, { "users": 2287, "value": 1100 }, { "users": 2471, "value": 1100 }, { "users": 2663, "value": 1100 }, { "users": 2851, "value": 1100 }, { "users": 3042, "value": 1100 }, { "users": 3233, "value": 1100 }, { "users": 3424, "value": 1100 }, { "users": 3609, "value": 1100 }, { "users": 3793, "value": 1100 }, { "users": 3974, "value": 1200 }, { "users": 4157, "value": 1200 }, { "users": 4348, "value": 1200 }, { "users": 4531, "value": 1200 }, { "users": 4707, "value": 1200 }, { "users": 4889, "value": 1200 }, { "users": 5000, "value": 1200 }, { "users": 5000, "value": 1200 }, { "users": 4997, "value": 1200 }],
+        };
+        var fastapi_async_gunicorn = {
+            "time": ["17:24:44", "17:24:49", "17:24:54", "17:24:59", "17:25:04", "17:25:09", "17:25:14", "17:25:19", "17:25:24", "17:25:29", "17:25:34", "17:25:39", "17:25:44", "17:25:49", "17:25:54", "17:25:59", "17:26:04", "17:26:09", "17:26:14", "17:26:19", "17:26:24", "17:26:30", "17:26:35"],
+            "user_count": [{ "value": 402 }, { "value": 863 }, { "value": 1322 }, { "value": 1716 }, { "value": 1980 }, { "value": 2212 }, { "value": 2409 }, { "value": 2598 }, { "value": 2794 }, { "value": 2992 }, { "value": 3181 }, { "value": 3359 }, { "value": 3541 }, { "value": 3729 }, { "value": 3914 }, { "value": 4105 }, { "value": 4291 }, { "value": 4469 }, { "value": 4655 }, { "value": 4837 }, { "value": 5000 }, { "value": 5000 }, { "value": 5000 }],
+            "current_rps": [{ "users": 402, "value": 29.5 }, { "users": 863, "value": 247.0 }, { "users": 1322, "value": 563.7 }, { "users": 1716, "value": 1023.1 }, { "users": 1980, "value": 1438.7 }, { "users": 2212, "value": 1704.1 }, { "users": 2409, "value": 1862.5 }, { "users": 2598, "value": 1918.9 }, { "users": 2794, "value": 1875.3 }, { "users": 2992, "value": 1856.6 }, { "users": 3181, "value": 1882.4 }, { "users": 3359, "value": 1859.4 }, { "users": 3541, "value": 1806.2 }, { "users": 3729, "value": 1837.4 }, { "users": 3914, "value": 1802.3 }, { "users": 4105, "value": 1786.3 }, { "users": 4291, "value": 1813.1 }, { "users": 4469, "value": 1790.0 }, { "users": 4655, "value": 1845.2 }, { "users": 4837, "value": 1840.3 }, { "users": 5000, "value": 1767.4 }, { "users": 5000, "value": 1731.7 }, { "users": 5000, "value": 1754.2 }],
+            "current_fail_per_sec": [{ "users": 402, "value": 0 }, { "users": 863, "value": 0 }, { "users": 1322, "value": 0 }, { "users": 1716, "value": 0 }, { "users": 1980, "value": 0 }, { "users": 2212, "value": 0 }, { "users": 2409, "value": 0 }, { "users": 2598, "value": 0 }, { "users": 2794, "value": 0 }, { "users": 2992, "value": 0 }, { "users": 3181, "value": 0 }, { "users": 3359, "value": 0 }, { "users": 3541, "value": 0 }, { "users": 3729, "value": 0 }, { "users": 3914, "value": 0 }, { "users": 4105, "value": 0 }, { "users": 4291, "value": 0 }, { "users": 4469, "value": 0 }, { "users": 4655, "value": 0 }, { "users": 4837, "value": 0 }, { "users": 5000, "value": 0 }, { "users": 5000, "value": 0 }, { "users": 5000, "value": 0 }],
+            "response_time_percentile_50": [{ "users": 402, "value": 1000 }, { "users": 863, "value": 1000 }, { "users": 1322, "value": 1000 }, { "users": 1716, "value": 1000 }, { "users": 1980, "value": 1000 }, { "users": 2212, "value": 1000 }, { "users": 2409, "value": 1000 }, { "users": 2598, "value": 1000 }, { "users": 2794, "value": 1000 }, { "users": 2992, "value": 1000 }, { "users": 3181, "value": 1000 }, { "users": 3359, "value": 1000 }, { "users": 3541, "value": 1000 }, { "users": 3729, "value": 1000 }, { "users": 3914, "value": 1000 }, { "users": 4105, "value": 1000 }, { "users": 4291, "value": 1000 }, { "users": 4469, "value": 1000 }, { "users": 4655, "value": 1000 }, { "users": 4837, "value": 1000 }, { "users": 5000, "value": 1000 }, { "users": 5000, "value": 1000 }, { "users": 5000, "value": 1000 }],
+            "response_time_percentile_95": [{ "users": 402, "value": 1000 }, { "users": 863, "value": 1000 }, { "users": 1322, "value": 1000 }, { "users": 1716, "value": 1000 }, { "users": 1980, "value": 1000 }, { "users": 2212, "value": 1100 }, { "users": 2409, "value": 1100 }, { "users": 2598, "value": 1100 }, { "users": 2794, "value": 1100 }, { "users": 2992, "value": 1100 }, { "users": 3181, "value": 1100 }, { "users": 3359, "value": 1100 }, { "users": 3541, "value": 1100 }, { "users": 3729, "value": 1100 }, { "users": 3914, "value": 1100 }, { "users": 4105, "value": 1100 }, { "users": 4291, "value": 1100 }, { "users": 4469, "value": 1200 }, { "users": 4655, "value": 1200 }, { "users": 4837, "value": 1200 }, { "users": 5000, "value": 1200 }, { "users": 5000, "value": 1200 }, { "users": 5000, "value": 1200 }],
+        };
+        var fastapi_async_hypercorn = {
+            "time": ["17:11:23", "17:11:28", "17:11:33", "17:11:38", "17:11:43", "17:11:48", "17:11:53", "17:11:58", "17:12:03", "17:12:08", "17:12:13", "17:12:18", "17:12:23", "17:12:28", "17:12:33", "17:12:38", "17:12:43", "17:12:48", "17:12:53", "17:12:58"],
+            "user_count": [{ "value": 283 }, { "value": 742 }, { "value": 1200 }, { "value": 1605 }, { "value": 1912 }, { "value": 2163 }, { "value": 2389 }, { "value": 2674 }, { "value": 2950 }, { "value": 3224 }, { "value": 3482 }, { "value": 3744 }, { "value": 4002 }, { "value": 4262 }, { "value": 4468 }, { "value": 4722 }, { "value": 4973 }, { "value": 5000 }, { "value": 5000 }, { "value": 3834 }],
+            "current_rps": [{ "users": 283, "value": 0 }, { "users": 742, "value": 198.0 }, { "users": 1200, "value": 465.5 }, { "users": 1605, "value": 918.1 }, { "users": 1912, "value": 1314.9 }, { "users": 2163, "value": 1565.0 }, { "users": 2389, "value": 1674.6 }, { "users": 2674, "value": 1770.4 }, { "users": 2950, "value": 1923.3 }, { "users": 3224, "value": 2028.5 }, { "users": 3482, "value": 2005.1 }, { "users": 3744, "value": 2012.9 }, { "users": 4002, "value": 2070.1 }, { "users": 4262, "value": 2056.3 }, { "users": 4468, "value": 1978.3 }, { "users": 4722, "value": 1941.9 }, { "users": 4973, "value": 1962.9 }, { "users": 5000, "value": 1961.9 }, { "users": 5000, "value": 1973.5 }, { "users": 3834, "value": 2062.3 }],
+            "current_fail_per_sec": [{ "users": 283, "value": 0 }, { "users": 742, "value": 0 }, { "users": 1200, "value": 0 }, { "users": 1605, "value": 0 }, { "users": 1912, "value": 0 }, { "users": 2163, "value": 0 }, { "users": 2389, "value": 0 }, { "users": 2674, "value": 0 }, { "users": 2950, "value": 0 }, { "users": 3224, "value": 0 }, { "users": 3482, "value": 0 }, { "users": 3744, "value": 0 }, { "users": 4002, "value": 0 }, { "users": 4262, "value": 0 }, { "users": 4468, "value": 0 }, { "users": 4722, "value": 0 }, { "users": 4973, "value": 0 }, { "users": 5000, "value": 0 }, { "users": 5000, "value": 0 }, { "users": 3834, "value": 0 }],
+            "response_time_percentile_50": [{ "users": 283, "value": 1000 }, { "users": 742, "value": 1000 }, { "users": 1200, "value": 1000 }, { "users": 1605, "value": 1000 }, { "users": 1912, "value": 1000 }, { "users": 2163, "value": 1100 }, { "users": 2389, "value": 1100 }, { "users": 2674, "value": 1200 }, { "users": 2950, "value": 1300 }, { "users": 3224, "value": 1400 }, { "users": 3482, "value": 1500 }, { "users": 3744, "value": 1600 }, { "users": 4002, "value": 1700 }, { "users": 4262, "value": 1700 }, { "users": 4468, "value": 1800 }, { "users": 4722, "value": 2000 }, { "users": 4973, "value": 2100 }, { "users": 5000, "value": 2300 }, { "users": 5000, "value": 2300 }, { "users": 3834, "value": 2200 }],
+            "response_time_percentile_95": [{ "users": 283, "value": 1000 }, { "users": 742, "value": 1000 }, { "users": 1200, "value": 1000 }, { "users": 1605, "value": 1000 }, { "users": 1912, "value": 1200 }, { "users": 2163, "value": 1300 }, { "users": 2389, "value": 1400 }, { "users": 2674, "value": 1500 }, { "users": 2950, "value": 1600 }, { "users": 3224, "value": 1700 }, { "users": 3482, "value": 1800 }, { "users": 3744, "value": 1900 }, { "users": 4002, "value": 2000 }, { "users": 4262, "value": 2100 }, { "users": 4468, "value": 2300 }, { "users": 4722, "value": 2500 }, { "users": 4973, "value": 2600 }, { "users": 5000, "value": 2800 }, { "users": 5000, "value": 2800 }, { "users": 3834, "value": 2800 }],
+        };
+        var fastapi_async_uvicorn = {
+            "time": ["17:07:25", "17:07:30", "17:07:35", "17:07:40", "17:07:45", "17:07:50", "17:07:55", "17:08:00", "17:08:05", "17:08:10", "17:08:15", "17:08:20", "17:08:25", "17:08:30", "17:08:35", "17:08:40", "17:08:45", "17:08:50", "17:08:55", "17:09:00", "17:09:05", "17:09:10", "17:09:15", "17:09:20", "17:09:25", "17:09:30"],
+            "user_count": [{ "value": 222 }, { "value": 674 }, { "value": 1136 }, { "value": 1565 }, { "value": 1888 }, { "value": 2119 }, { "value": 2322 }, { "value": 2510 }, { "value": 2700 }, { "value": 2889 }, { "value": 3081 }, { "value": 3273 }, { "value": 3458 }, { "value": 3645 }, { "value": 3831 }, { "value": 4019 }, { "value": 4209 }, { "value": 4388 }, { "value": 4574 }, { "value": 4761 }, { "value": 4950 }, { "value": 5000 }, { "value": 4999 }, { "value": 4996 }, { "value": 4993 }, { "value": 4989 }],
+            "current_rps": [{ "users": 222, "value": 0 }, { "users": 674, "value": 169.33333333333334 }, { "users": 1136, "value": 428.6 }, { "users": 1565, "value": 881.5 }, { "users": 1888, "value": 1322.6 }, { "users": 2119, "value": 1647.5 }, { "users": 2322, "value": 1788.6 }, { "users": 2510, "value": 1845.9 }, { "users": 2700, "value": 1852.8 }, { "users": 2889, "value": 1824.7 }, { "users": 3081, "value": 1855.2 }, { "users": 3273, "value": 1889.2 }, { "users": 3458, "value": 1859.9 }, { "users": 3645, "value": 1818.6 }, { "users": 3831, "value": 1817.9 }, { "users": 4019, "value": 1818.5 }, { "users": 4209, "value": 1813.5 }, { "users": 4388, "value": 1851.5 }, { "users": 4574, "value": 1807.8 }, { "users": 4761, "value": 1765.1 }, { "users": 4950, "value": 1811.7 }, { "users": 5000, "value": 1846.6 }, { "users": 4999, "value": 1806.8 }, { "users": 4996, "value": 1784.0 }, { "users": 4993, "value": 1847.3 }, { "users": 4989, "value": 1820.0 }],
+            "current_fail_per_sec": [{ "users": 222, "value": 0 }, { "users": 674, "value": 0 }, { "users": 1136, "value": 0 }, { "users": 1565, "value": 0 }, { "users": 1888, "value": 0 }, { "users": 2119, "value": 0 }, { "users": 2322, "value": 0 }, { "users": 2510, "value": 0 }, { "users": 2700, "value": 0 }, { "users": 2889, "value": 0 }, { "users": 3081, "value": 0 }, { "users": 3273, "value": 0 }, { "users": 3458, "value": 0 }, { "users": 3645, "value": 0 }, { "users": 3831, "value": 0 }, { "users": 4019, "value": 0 }, { "users": 4209, "value": 0 }, { "users": 4388, "value": 0 }, { "users": 4574, "value": 0 }, { "users": 4761, "value": 0 }, { "users": 4950, "value": 0 }, { "users": 5000, "value": 0 }, { "users": 4999, "value": 0 }, { "users": 4996, "value": 0 }, { "users": 4993, "value": 0 }, { "users": 4989, "value": 0 }],
+            "response_time_percentile_50": [{ "users": 222, "value": 1000 }, { "users": 674, "value": 1000 }, { "users": 1136, "value": 1000 }, { "users": 1565, "value": 1000 }, { "users": 1888, "value": 1000 }, { "users": 2119, "value": 1000 }, { "users": 2322, "value": 1000 }, { "users": 2510, "value": 1000 }, { "users": 2700, "value": 1000 }, { "users": 2889, "value": 1000 }, { "users": 3081, "value": 1000 }, { "users": 3273, "value": 1000 }, { "users": 3458, "value": 1000 }, { "users": 3645, "value": 1000 }, { "users": 3831, "value": 1000 }, { "users": 4019, "value": 1000 }, { "users": 4209, "value": 1000 }, { "users": 4388, "value": 1000 }, { "users": 4574, "value": 1000 }, { "users": 4761, "value": 1000 }, { "users": 4950, "value": 1000 }, { "users": 5000, "value": 1000 }, { "users": 4999, "value": 1000 }, { "users": 4996, "value": 1000 }, { "users": 4993, "value": 1000 }, { "users": 4989, "value": 1000 }],
+            "response_time_percentile_95": [{ "users": 222, "value": 1000 }, { "users": 674, "value": 1000 }, { "users": 1136, "value": 1000 }, { "users": 1565, "value": 1000 }, { "users": 1888, "value": 1000 }, { "users": 2119, "value": 1100 }, { "users": 2322, "value": 1100 }, { "users": 2510, "value": 1100 }, { "users": 2700, "value": 1100 }, { "users": 2889, "value": 1100 }, { "users": 3081, "value": 1100 }, { "users": 3273, "value": 1100 }, { "users": 3458, "value": 1100 }, { "users": 3645, "value": 1200 }, { "users": 3831, "value": 1100 }, { "users": 4019, "value": 1100 }, { "users": 4209, "value": 1200 }, { "users": 4388, "value": 1200 }, { "users": 4574, "value": 1200 }, { "users": 4761, "value": 1200 }, { "users": 4950, "value": 1200 }, { "users": 5000, "value": 1200 }, { "users": 4999, "value": 1200 }, { "users": 4996, "value": 1200 }, { "users": 4993, "value": 1200 }, { "users": 4989, "value": 1200 }],
+        };
+        var fastapi_sync_gunicorn_h11 = {
+            "time": ["17:22:34", "17:22:39", "17:22:44", "17:22:49", "17:22:54", "17:22:59", "17:23:04", "17:23:09", "17:23:14"],
+            "user_count": [{ "value": 384 }, { "value": 839 }, { "value": 1294 }, { "value": 1745 }, { "value": 2193 }, { "value": 2651 }, { "value": 3093 }, { "value": 3550 }, { "value": 3993 }],
+            "current_rps": [{ "users": 384, "value": 35.5 }, { "users": 839, "value": 120.0 }, { "users": 1294, "value": 156.8 }, { "users": 1745, "value": 159.9 }, { "users": 2193, "value": 159.8 }, { "users": 2651, "value": 159.7 }, { "users": 3093, "value": 159.9 }, { "users": 3550, "value": 160.0 }, { "users": 3993, "value": 159.8 }],
+            "current_fail_per_sec": [{ "users": 384, "value": 0 }, { "users": 839, "value": 0 }, { "users": 1294, "value": 0 }, { "users": 1745, "value": 0 }, { "users": 2193, "value": 0 }, { "users": 2651, "value": 0 }, { "users": 3093, "value": 0 }, { "users": 3550, "value": 0 }, { "users": 3993, "value": 0 }],
+            "response_time_percentile_50": [{ "users": 384, "value": 1000 }, { "users": 839, "value": 1500 }, { "users": 1294, "value": 2600 }, { "users": 1745, "value": 3900 }, { "users": 2193, "value": 5100 }, { "users": 2651, "value": 6300 }, { "users": 3093, "value": 7400 }, { "users": 3550, "value": 8200 }, { "users": 3993, "value": 9400 }],
+            "response_time_percentile_95": [{ "users": 384, "value": 1800 }, { "users": 839, "value": 3800 }, { "users": 1294, "value": 6900 }, { "users": 1745, "value": 9900 }, { "users": 2193, "value": 13000 }, { "users": 2651, "value": 16000 }, { "users": 3093, "value": 19000 }, { "users": 3550, "value": 22000 }, { "users": 3993, "value": 25000 }],
+        };
+        var fastapi_sync_gunicorn = {
+            "time": ["17:27:51", "17:27:56", "17:28:01", "17:28:06", "17:28:11", "17:28:16", "17:28:21"],
+            "user_count": [{ "value": 74 }, { "value": 530 }, { "value": 983 }, { "value": 1429 }, { "value": 1887 }, { "value": 2331 }, { "value": 2787 }],
+            "current_rps": [{ "users": 74, "value": 0 }, { "users": 530, "value": 56.666666666666664 }, { "users": 983, "value": 103.625 }, { "users": 1429, "value": 145.3 }, { "users": 1887, "value": 159.4 }, { "users": 2331, "value": 159.9 }, { "users": 2787, "value": 159.6 }],
+            "current_fail_per_sec": [{ "users": 74, "value": 0 }, { "users": 530, "value": 0 }, { "users": 983, "value": 0 }, { "users": 1429, "value": 0 }, { "users": 1887, "value": 0 }, { "users": 2331, "value": 0 }, { "users": 2787, "value": 0 }],
+            "response_time_percentile_50": [{ "users": 74, "value": 0 }, { "users": 530, "value": 1100 }, { "users": 983, "value": 1800 }, { "users": 1429, "value": 3100 }, { "users": 1887, "value": 4800 }, { "users": 2331, "value": 7000 }, { "users": 2787, "value": 8000 }],
+            "response_time_percentile_95": [{ "users": 74, "value": 0 }, { "users": 530, "value": 2900 }, { "users": 983, "value": 5200 }, { "users": 1429, "value": 7700 }, { "users": 1887, "value": 10000 }, { "users": 2331, "value": 13000 }, { "users": 2787, "value": 16000 }],
+        };
+        var fastapi_sync_hypercorn = {
+            "time": ["17:16:25", "17:16:30", "17:16:35", "17:16:40", "17:16:45", "17:16:50", "17:16:55", "17:17:00", "17:17:05", "17:17:10", "17:17:15", "17:17:20", "17:17:25", "17:17:30", "17:17:35"],
+            "user_count": [{ "value": 208 }, { "value": 660 }, { "value": 1119 }, { "value": 1571 }, { "value": 2030 }, { "value": 2478 }, { "value": 2924 }, { "value": 3380 }, { "value": 3824 }, { "value": 4281 }, { "value": 4719 }, { "value": 5000 }, { "value": 5000 }, { "value": 5000 }, { "value": 5000 }],
+            "current_rps": [{ "users": 208, "value": 0 }, { "users": 660, "value": 98.8 }, { "users": 1119, "value": 129.1 }, { "users": 1571, "value": 159.7 }, { "users": 2030, "value": 160.0 }, { "users": 2478, "value": 159.8 }, { "users": 2924, "value": 159.7 }, { "users": 3380, "value": 159.9 }, { "users": 3824, "value": 158.9 }, { "users": 4281, "value": 159.9 }, { "users": 4719, "value": 160.8 }, { "users": 5000, "value": 159.7 }, { "users": 5000, "value": 159.8 }, { "users": 5000, "value": 159.8 }, { "users": 5000, "value": 159.9 }],
+            "current_fail_per_sec": [{ "users": 208, "value": 0 }, { "users": 660, "value": 0 }, { "users": 1119, "value": 0 }, { "users": 1571, "value": 0 }, { "users": 2030, "value": 0 }, { "users": 2478, "value": 0 }, { "users": 2924, "value": 0 }, { "users": 3380, "value": 0 }, { "users": 3824, "value": 0 }, { "users": 4281, "value": 0 }, { "users": 4719, "value": 0 }, { "users": 5000, "value": 0 }, { "users": 5000, "value": 0 }, { "users": 5000, "value": 0 }, { "users": 5000, "value": 0 }],
+            "response_time_percentile_50": [{ "users": 208, "value": 1000 }, { "users": 660, "value": 1300 }, { "users": 1119, "value": 2000 }, { "users": 1571, "value": 3800 }, { "users": 2030, "value": 6100 }, { "users": 2478, "value": 7900 }, { "users": 2924, "value": 9200 }, { "users": 3380, "value": 10000 }, { "users": 3824, "value": 12000 }, { "users": 4281, "value": 13000 }, { "users": 4719, "value": 15000 }, { "users": 5000, "value": 16000 }, { "users": 5000, "value": 18000 }, { "users": 5000, "value": 20000 }, { "users": 5000, "value": 21000 }],
+            "response_time_percentile_95": [{ "users": 208, "value": 1000 }, { "users": 660, "value": 3100 }, { "users": 1119, "value": 5600 }, { "users": 1571, "value": 7800 }, { "users": 2030, "value": 10000 }, { "users": 2478, "value": 13000 }, { "users": 2924, "value": 15000 }, { "users": 3380, "value": 18000 }, { "users": 3824, "value": 21000 }, { "users": 4281, "value": 23000 }, { "users": 4719, "value": 26000 }, { "users": 5000, "value": 28000 }, { "users": 5000, "value": 31000 }, { "users": 5000, "value": 33000 }, { "users": 5000, "value": 36000 }],
+        };
+        var fastapi_sync_uvicorn = {
+            "time": ["17:04:47", "17:04:52", "17:04:57", "17:05:02", "17:05:07", "17:05:12", "17:05:17", "17:05:22", "17:05:27", "17:05:32", "17:05:37"],
+            "user_count": [{ "value": 394 }, { "value": 844 }, { "value": 1300 }, { "value": 1747 }, { "value": 2204 }, { "value": 2650 }, { "value": 3092 }, { "value": 3550 }, { "value": 3989 }, { "value": 4448 }, { "value": 4886 }],
+            "current_rps": [{ "users": 394, "value": 40.333333333333336 }, { "users": 844, "value": 104.625 }, { "users": 1300, "value": 151.0 }, { "users": 1747, "value": 159.4 }, { "users": 2204, "value": 160.0 }, { "users": 2650, "value": 159.9 }, { "users": 3092, "value": 159.6 }, { "users": 3550, "value": 159.6 }, { "users": 3989, "value": 159.5 }, { "users": 4448, "value": 159.5 }, { "users": 4886, "value": 159.7 }],
+            "current_fail_per_sec": [{ "users": 394, "value": 0 }, { "users": 844, "value": 0 }, { "users": 1300, "value": 0 }, { "users": 1747, "value": 0 }, { "users": 2204, "value": 0 }, { "users": 2650, "value": 0 }, { "users": 3092, "value": 0 }, { "users": 3550, "value": 0 }, { "users": 3989, "value": 0 }, { "users": 4448, "value": 0 }, { "users": 4886, "value": 0 }],
+            "response_time_percentile_50": [{ "users": 394, "value": 1000 }, { "users": 844, "value": 1500 }, { "users": 1300, "value": 2500 }, { "users": 1747, "value": 4000 }, { "users": 2204, "value": 5100 }, { "users": 2650, "value": 5900 }, { "users": 3092, "value": 7000 }, { "users": 3550, "value": 8100 }, { "users": 3989, "value": 9400 }, { "users": 4448, "value": 10000 }, { "users": 4886, "value": 11000 }],
+            "response_time_percentile_95": [{ "users": 394, "value": 2200 }, { "users": 844, "value": 4700 }, { "users": 1300, "value": 7200 }, { "users": 1747, "value": 10000 }, { "users": 2204, "value": 13000 }, { "users": 2650, "value": 15000 }, { "users": 3092, "value": 18000 }, { "users": 3550, "value": 20000 }, { "users": 3989, "value": 23000 }, { "users": 4448, "value": 25000 }, { "users": 4886, "value": 28000 }],
+        };
+        var legends = ["Falcon Async Hypercorn", "Falcon Async Uvicorn", "Falcon Sync Bjoern", "Falcon Sync Gunicorn Eventlet",
+            "Falcon Sync Gunicorn Gevent", "Falcon Sync Gunicorn Gthreads", "Falcon Sync Gunicorn Sync",
+            "Falcon Sync Gunicorn Tornado", "Falcon Sync Uwsgi Gevent", "Falcon Sync Uwsgi",
+            "FastApi Async Gunicorn H11", "FastApi Async Gunicorn", "FastApi Async Hypercorn",
+            "FastApi Async Uvicorn", "FastApi Sync Gunicorn H11", "FastApi Sync Gunicorn",
+            "FastApi Sync Hypercorn", "FastApi Sync Uvicorn"];
+        var colors = ['#00ca5a', '#ffca5a', '#4d7723', '#f5905a', '#5e80bc', '#fc83fd', '#de7763',
+            '#631d8e', '#db29cf', '#935b32', '#3ea6a4', '#8207e9', '#5e3e64', '#04c583', '#cc6202', '#c31dd6', '#ec5da4', '#045d7b'];
+        var rpsChart = new LocustLineChart($(".charts-container"), "Total Requests per Second", legends, "reqs/s", colors);
+
+        var responseTimeMedianChart = new LocustLineChart($(".charts-container"), "Response Times Median (ms)", legends, "ms", colors);
+        var responseTime95Chart = new LocustLineChart($(".charts-container"), "Response Times 95% (ms)", legends, "ms", colors);
+        var usersChart = new LocustLineChart($(".charts-container"), "Number of Users", legends, "users", colors);
+
+        var stats = [falcon_async_hypercorn, falcon_async_uvircorn, falcon_sync_bjoern, falcon_sync_gunicorn_eventlet,
+            falcon_sync_gunicorn_gevent, falcon_sync_gunicorn_gthreads, falcon_sync_gunicorn_sync,
+            falcon_sync_gunicorn_tornado, falcon_sync_uwsgi_gevent, falcon_sync_uwsgi, fastapi_async_gunicorn_h11,
+            fastapi_async_gunicorn, fastapi_async_hypercorn, fastapi_async_uvicorn, fastapi_sync_gunicorn_h11,
+            fastapi_sync_gunicorn, fastapi_sync_hypercorn, fastapi_sync_uvicorn];
+        var mmax = 0;
+        for (var i = 1; i < stats.length; i++) {
+            if (stats[mmax]["time"].length < stats[i]["time"].length) {
+                while (stats[mmax]["time"].length < stats[i]["time"].length) {
+                    stats[mmax]["time"].push(stats[mmax]["time"][stats[mmax]["time"].length - 1])
+                }
+                mmax = i;
+            } else {
+                while (stats[i]["time"].length < stats[mmax]["time"].length) {
+                    stats[i]["time"].push(stats[i]["time"][stats[i]["time"].length - 1])
+                }
+            }
+        }
+
+        var rps_series = [];
+        for (var i = 0; i < stats.length; i++) {
+            rps_series.push({ data: stats[i]["current_rps"] });
+        }
+
+        var responseTimeMedianSeries = [];
+        for (var i = 0; i < stats.length; i++) {
+            responseTimeMedianSeries.push({ data: stats[i]["response_time_percentile_50"] });
+        }
+
+        var responseTime95Series = [];
+        for (var i = 0; i < stats.length; i++) {
+            responseTime95Series.push({ data: stats[i]["response_time_percentile_95"] });
+        }
+
+        var usersChartSeries = [];
+        for (var i = 0; i < stats.length; i++) {
+            usersChartSeries.push({ data: stats[i]["user_count"] });
+        }
+
+        if (stats[mmax]["time"].length > 0) {
+            stats[mmax]["time"] = stats[mmax]["time"].map((v) => {
+                var t = v.split(":");
+                t[0] = "00"
+                return t.join(":")
+            });
+            rpsChart.chart.setOption({
+                xAxis: { data: stats[mmax]["time"] },
+                series: rps_series
+            });
+
+            responseTimeMedianChart.chart.setOption({
+                xAxis: { data: stats[mmax]["time"] },
+                series: responseTimeMedianSeries
+            });
+
+            responseTime95Chart.chart.setOption({
+                xAxis: { data: stats[mmax]["time"] },
+                series: responseTime95Series
+            });
+
+            usersChart.chart.setOption({
+                xAxis: {
+                    data: stats[mmax]["time"]
+                },
+                series: usersChartSeries
+            });
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,9 @@
+*
+
+!app
+!locustfile.py
+!requirements.txt
+!gunicorn_config.py
+
+*.pyc
+__pycache__

@@ -1,0 +1,40 @@
+repos:
+  - repo: local
+    hooks:
+      - id: yapf
+        name: yapf
+        entry: yapf
+        language: python
+        types: [python]
+        require_serial: false
+        additional_dependencies: []
+        args:
+          - --style=./pyproject.toml
+          - -p
+          - -i
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.2.0
+    hooks:
+      - id: check-ast
+      - id: trailing-whitespace
+      - id: debug-statements
+      - id: end-of-file-fixer
+  - repo: local
+    hooks:
+      - id: pylint
+        name: pylint
+        entry: pylint
+        language: python
+        types: [python]
+        args: ["--score=n"]
+        require_serial: false
+        additional_dependencies: []
+  # раскоментить если нужен requirenments.txt
+  # - repo: local
+  #   hooks:
+  #     - id: update-dependencies
+  #       name: update-dependencies
+  #       entry: poetry export --without-hashes -f requirements.txt -o deploy/requirements.txt
+  #       language: system
+  #       pass_filenames: false
+  #       files: ^(poetry.lock|pyproject.toml)

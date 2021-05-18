@@ -1,0 +1,19 @@
+{
+  "python.pythonPath": "${workspaceFolder}/.venv/bin/python",
+  "python.linting.enabled": true,
+  "python.linting.flake8Enabled": false,
+  "python.linting.pylintEnabled": true,
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": true,
+  "python.testing.nosetestsEnabled": false,
+  "python.testing.pytestArgs": [
+    "-c",
+    "${workspaceFolder}/pyproject.toml",
+    "tests"
+  ],
+  "python.formatting.provider": "yapf",
+  "python.formatting.yapfArgs": ["--style=${workspaceFolder}/pyproject.toml"],
+  "python.sortImports.path": "${workspaceFolder}/.venv/bin/isort",
+  "python.sortImports.args": ["--settings-path", "${workspaceFolder}/pyproject.toml"],
+  "python.languageServer": "Pylance"
+}
